@@ -50,4 +50,5 @@ app.use((error, req, res, next) => {
 });
 // test
 app.listen(port);
+console.log(`Server listen on port ${port}`);
 module.exports = app;
