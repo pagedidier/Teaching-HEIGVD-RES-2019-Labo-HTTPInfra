@@ -36,8 +36,9 @@ app.use(cors());
 
 
 app.get('/', (req, res) => {
-  res.json('Patate');
+  res.json({ server: 'dynamic' });
 });
+
 
 app.use((req, res, next) => {
   next(createError(404));
