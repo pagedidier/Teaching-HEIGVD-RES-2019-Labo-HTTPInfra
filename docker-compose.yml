@@ -1,0 +1,49 @@
+version: "3"
+services:
+  static-apache:
+    image: res/staticapache
+    container_name: staticapache
+    build:
+      context: ./docker-apache-image
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+    labels:
+      - "traefik.docker.network=web"
+      - "traefik.frontend.rule=Host:localhost"
+      - "traefik.port=80"
+    networks:
+      - web
+  dynamic-express:
+    image: res/dynamicexpress
+    container_name: dynamicexpress
+    build:
+      context: ./docker-express-image
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    labels:
+     - "traefik.docker.network=web"
+     - "traefik.frontend.rule=Host:localhost; PathPrefixStrip:/api"
+     - "traefik.port=3000"
+    networks:
+      - web
+  rp:
+    image: traefik
+    container_name: traefikrp
+    restart: always
+    command: --api --docker # Enables the web UI and tells Traefik to listen to docker
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.toml:/traefik.toml
+      - ~/data/traefik/acme.json:/acme.json
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
