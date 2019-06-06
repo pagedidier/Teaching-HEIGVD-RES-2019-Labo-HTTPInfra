@@ -3,7 +3,9 @@ const cors = require('cors');
 const createError = require('http-errors');
 const express = require('express');
 
-const chance = require('chance');
+const Chance = require('chance');
+
+const chance = new Chance();
 
 const configFile = require('./config/config.json');
 
@@ -35,8 +37,32 @@ app.use((req, res, next) => {
 app.use(cors());
 
 
-app.get('/', (req, res) => {
-  res.json('Patate');
+app.get('/meteo', (req, res) => {
+  const data = [];
+  for (let i = 0; i < 10; i += 1) {
+    const cityname = chance.city();
+    const citylat = chance.latitude();
+    const citylong = chance.longitude();
+
+    const city = {
+      cityname,
+      citylat,
+      citylong,
+    };
+    const weekMeteo = [];
+    for (let j = 0; j < 7; j += 1) {
+      const temperature = chance.integer({ min: 0, max: 40 });
+      const precipitation = chance.integer({ min: 0, max: 10 });
+      weekMeteo.push({ temperature, precipitation });
+    }
+    const elem = {
+      city,
+      weekMeteo,
+    };
+
+    data.push(elem);
+  }
+  res.json(data);
 });
 
 app.use((req, res, next) => {
