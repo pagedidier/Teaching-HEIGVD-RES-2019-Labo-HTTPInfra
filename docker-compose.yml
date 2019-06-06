@@ -2,7 +2,6 @@ version: "3"
 services:
   static-apache:
     image: res/staticapache
-    container_name: staticapache
     build:
       context: ./docker-apache-image
       dockerfile: Dockerfile
@@ -16,7 +15,6 @@ services:
       - web
   dynamic-express:
     image: res/dynamicexpress
-    container_name: dynamicexpress
     build:
       context: ./docker-express-image
       dockerfile: Dockerfile
