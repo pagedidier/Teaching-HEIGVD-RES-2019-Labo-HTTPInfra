@@ -37,7 +37,7 @@ app.use((req, res, next) => {
 app.use(cors());
 
 
-app.get('/meteo', (req, res) => {
+app.get('/api/meteo', (req, res) => {
   const data = [];
   for (let i = 0; i < 10; i += 1) {
     const cityname = chance.city();
@@ -74,6 +74,7 @@ app.use((error, req, res, next) => {
   res.status(error.status || 500);
   res.json({ error: true, message: error.message });
 });
-// test
+
+
 app.listen(port);
 module.exports = app;
