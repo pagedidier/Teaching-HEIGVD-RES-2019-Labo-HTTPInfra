@@ -49,15 +49,14 @@ app.get('/api/meteo', (req, res) => {
       citylat,
       citylong,
     };
-    const weekMeteo = [];
-    for (let j = 0; j < 7; j += 1) {
-      const temperature = chance.integer({ min: 0, max: 40 });
-      const precipitation = chance.integer({ min: 0, max: 10 });
-      weekMeteo.push({ temperature, precipitation });
-    }
+    const temperature = chance.integer({ min: 0, max: 40 });
+    const precipitation = chance.integer({ min: 0, max: 10 });
+
+    const meteo = { temperature, precipitation };
+
     const elem = {
       city,
-      weekMeteo,
+      meteo,
     };
 
     data.push(elem);
