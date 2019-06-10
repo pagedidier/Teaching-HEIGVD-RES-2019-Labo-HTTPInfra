@@ -37,9 +37,9 @@ $ docker run --rm --name apache_php -d -p 80:80 res/apache_php:latest
 
 Then access the server on <u>port 80</u>.
 
-![](/home/baribal/ownCloud/HEIG/Semestre_IV/RES/Laboratoire/http-infra-Bruno/Teaching-HEIGVD-RES-2019-Labo-HTTPInfra/img/postman_static.png)
+![](img/postman_static.png)
 
-![result of static content](/home/baribal/ownCloud/HEIG/Semestre_IV/RES/Laboratoire/http-infra-Bruno/Teaching-HEIGVD-RES-2019-Labo-HTTPInfra/img/static_content.png)
+![result of static content](img/static_content.png)
 
 ## Step 2: Dynamic HTTP server with express.js
 
@@ -96,7 +96,7 @@ app.use((req, res, next) => {
 app.use(cors());
 
 
-app.get('/api/meteo', (req, res) => {
+app.get('/meteo', (req, res) => {
   const data = [];
   for (let i = 0; i < 10; i += 1) {
     const cityname = chance.city();
@@ -108,21 +108,21 @@ app.get('/api/meteo', (req, res) => {
       citylat,
       citylong,
     };
-    const weekMeteo = [];
-    for (let j = 0; j < 7; j += 1) {
-      const temperature = chance.integer({ min: 0, max: 40 });
-      const precipitation = chance.integer({ min: 0, max: 10 });
-      weekMeteo.push({ temperature, precipitation });
-    }
+    const temperature = chance.integer({ min: 0, max: 40 });
+    const precipitation = chance.integer({ min: 0, max: 10 });
+
+    const meteo = { temperature, precipitation };
+
     const elem = {
       city,
-      weekMeteo,
+      meteo,
     };
 
     data.push(elem);
   }
   res.json(data);
 });
+
 
 app.use((req, res, next) => {
   next(createError(404));
@@ -136,6 +136,7 @@ app.use((error, req, res, next) => {
 
 
 app.listen(port);
+console.log(`Server listen on port ${port}`);
 module.exports = app;
 ```
 
@@ -169,7 +170,7 @@ Note that you had to specified the resource which is `api/meteo` otherwise you w
 
 Getting the right resource the server is sending to us *JSON* array containing fake weather data.
 
-  ![](/home/baribal/ownCloud/HEIG/Semestre_IV/RES/Laboratoire/http-infra-Bruno/Teaching-HEIGVD-RES-2019-Labo-HTTPInfra/img/postman_dynamic.png)
+  ![](img/postman_dynamic.png)
 
 ## Step 3: Reverse proxy with apache (static configuration)
 
@@ -475,7 +476,7 @@ Here is the configuration to the sticky session and the load balancing.
 
 If we start our infrastructure and check in the network tab in dev tool fom the browser we see a cookie for the session.
 
-![stickysession](/home/dpage/Bureau/img/stickysession.png)
+![stickysession](img/stickysession.png)
 
 to the dynamic service
 
@@ -498,7 +499,7 @@ We can see that we have 3 instances of the node server.
 
 We can also up scale our static web site
 
-![multiple-node](/home/dpage/Bureau/img/multiple-node.png)
+![multiple-node](img/multiple-node.png)
 
 ### Management UI  
 
