@@ -305,13 +305,229 @@ This function is used to update ----------- Un champ de la page html + quelques 
 
 The content of this step is in branch `feature/RP-dynamic`.
 
-In this part we modify the reverse proxy configuration to :
+First of all we created the php scirpt for building our apache configuration file
 
-- 
+```php
+<?php
+
+$dynamic_app = getenv("dynamic_app");
+$static_app = getenv("static_app");
+?>
+
+<VirtualHost *:80>
+    ServerName reslab
+
+    ProxyPass '/api/' 'http://<?= $dynamic_app ?>/'
+    ProxyPassReverse '/api/' 'http://<?= $dynamic_app ?>/'
+
+    ProxyPass '/' 'http://<?= $static_app ?>/'
+    ProxyPassReverse '/' 'http://<?= $static_app ?>/'
+</VirtualHost>
+
+
+```
+
+We had some problems with the `ServerName` in the last part so we change it.
+when we entered `demo.res.ch` in a browser, it automatically want to search website on internet.
+
+So to prevent that we change the name to a simpler one : `reslab`
+
+As in the webcast, we downloaded the `apache2-foreground` file that we added the line :
+
+```bash
+php /var/apache2/templates/config-template.php > /etc/apache2/sites-available/001-reverse-proxy.conf
+```
+
+Then we created a bash script to build, configure and start our infrastructure.
+
+First in the script we define our image and container name
+
+```bash
+staticContainerImage=res/static_image
+dynamicContainerImage=res/dynamic_image
+rpContainerImage=res/rp_image
+
+staticContainerName=static_app
+dynamicContainerName=dynamic_app
+rpContainerName=rp_app
+```
+
+Then just a fiew line to stop old running container with the same name
+
+```bash
+docker stop $staticContainerName
+docker stop $dynamicContainerName
+docker stop $rpContainerName
+
+docker rm $staticContainerName
+docker rm $dynamicContainerName
+docker rm $rpContainerName
+```
+
+Then we build the images 
+
+```bash
+cd ..
+cd docker-apache-image
+docker build . -t $staticContainerImage
+
+cd ..
+cd docker-express-image
+docker build . -t $dynamicContainerImage
+
+cd ..
+cd docker-apache-RP
+docker build . -t $rpContainerImage
+```
+
+Next we run the static and dynamic service
+
+```bash
+docker run -d --name $staticContainerName $staticContainerImage
+docker run -d --name $dynamicContainerName $dynamicContainerImage
+```
+
+And noe the magic part :
+
+We inspecte by the name, the botth services to get their ip adresses
+
+```bash
+ipstatic=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $staticContainerName)
+ipdynamic=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $dynamicContainerName)
+
+```
+
+And at the wnd we start our reverse proxy contaienr with the environment variables
+
+```bash
+docker run -d -e $staticContainerName=$ipstatic:80 -e $dynamicContainerName=$ipdynamic:3000 -p 80:80 --name $rpContainerName $rpContainerImage
+
+```
+
+
+
+## Additional steps
+
+All configuration In theses steps are in the branch `traefik`. To simplify the configuration of the used tools, we created a docker-compose.yml file and set our infrastructure to use it.
+
+```
+version: "3"
+services:
+  static-apache:
+    image: res/staticapache
+    build:
+      context: ./docker-apache-image
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+  dynamic-express:
+    image: res/dynamicexpress
+    build:
+      context: ./docker-express-image
+      dockerfile: Dockerfile
+    expose:
+      - "3000" 
+
+```
+
+And for the next steps we use the traefik reverse proxy that support the load balancing, the sticky sessions and the dynamic cluster managment
+
+We installed it by adding the default configuration in the docker-compose file
+
+```yml
+  rp:
+    image: traefik
+    container_name: traefikrp
+    restart: always
+    command: --api --docker
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.toml:/traefik.toml
+      - ~/data/traefik/acme.json:/acme.json
+    networks:
+      - web
+      
+networks:
+  web:
+    external: true      
+```
+
+And set the label to our configuation to support traefik.
+
+To the static service
+
+```yml
+    labels:
+      - "traefik.docker.network=web"
+      - "traefik.frontend.rule=Host:localhost"
+      - "traefik.port=80"
+      - "traefik.backend.loadbalancer.stickiness=true"
+      - "traefik.backend.loadbalancer.stickiness.cookieName=stickyCookie" 
+    networks:
+      - web
+```
+
+Here is the configuration to the sticky session and the load balancing.
+
+If we start our infrastructure and check in the network tab in dev tool fom the browser we see a cookie for the session.
+
+![stickysession](/home/dpage/Bureau/img/stickysession.png)
+
+to the dynamic service
+
+```yml
+    labels:
+     - "traefik.docker.network=web"
+     - "traefik.frontend.rule=Host:localhost; PathPrefixStrip:/api"
+     - "traefik.port=3000"
+```
+
+So if we run the the command to upscale the dynamic service :
+
+```bash
+docker-compose scale dynamic-express=3
+```
+
+![](/home/dpage/Bureau/img/scale.png)
+
+We can see that we have 3 instances of the node server.
+
+We can also up scale our static web site
+
+![multiple-node](/home/dpage/Bureau/img/multiple-node.png)
+
+### Management UI  
+
+For the management UI we instelled and used the tool `portainer` 
+
+The installation is set by adding a new service in the docker compose file
+
+```yml
+  portainer:
+      image: portainer/portainer
+      command: -H unix:///var/run/docker.sock
+      restart: always
+      ports:
+          - 9000:9000
+      volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - portainer_data:/data
+
+volumes:
+    portainer_data:
+```
+
+So now we can manage our lab througth the web interface on `localhost:9000`
+
+
+
+## ![portainer](./img/portainer.png)
 
 ## Sources
-
-
 
 https://www.npmjs.com/package/cors
 
