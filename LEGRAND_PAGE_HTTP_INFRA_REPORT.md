@@ -272,6 +272,13 @@ Host: demo.res.ch
 
 To get this working from browser you have to add `localhost demo.res.ch` to your hosts.
 
+Note : that the capture where mad with an basic version of the static and dynamic server
+
+Static content :
+![static](img/static.png)
+Dynamic content :
+![dynamic](img/dynamic.png)
+
 ## Step 4: AJAX requests with JQuery
 
 The content of this step is in branch `feature/express-docker`.
