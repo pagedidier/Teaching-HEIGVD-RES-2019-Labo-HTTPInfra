@@ -285,13 +285,13 @@ The content of this step is in branch `feature/express-docker`.
 
 In this part we modify static content to execute AJAX request on Express server to update the static content.
 
-Firstly we modify all our *Dockerfile* to make vim installed on all our custom docker image.  Just add the following line into each *Dockerfile*.
+Firstly we modify all our *Dockerfile* to make vim installed on all custom docker image.  Just add the following line into each *Dockerfile*.
 
 ```dockerfile
 RUN apt update && apt install -y vim
 ```
 
-Do not forget to rebuild all images before run containers.
+**Do not forget to rebuild all images before run containers.**
 
 Then we modify the static content (in our case it is `index.html`) to add some JavaScript.
 
@@ -299,9 +299,9 @@ Then we modify the static content (in our case it is `index.html`) to add some J
  $.getJSON("http://localhost/api/meteo/").done((data) => {...}
 ```
 
-This function is used to ge data from our  dynamic service.
+This function is used to get data from the dynamic service.
 
-Then in the corp of the function we get the html tempate form the div and update his content.
+Then in the content of the function we get the HTML template form the div and update his content.
 
 ```javascript
  var temp = $.trim($('#meteo-template').html());
@@ -349,11 +349,11 @@ $static_app = getenv("static_app");
 ```
 
 We had some problems with the `ServerName` in the last part so we change it.
-when we entered `demo.res.ch` in a browser, it automatically want to search website on internet.
+when we entered `demo.res.ch` in a browser, it automatically want to search website on Internet.
 
-So to prevent that we change the name to a simpler one : `reslab`
+To avoid this issue we change the name to a simpler one : `reslab`
 
-As in the webcast, we downloaded the `apache2-foreground` file that we added the line :
+As shown in the web-cast, we downloaded the `apache2-foreground` file that we added the line :
 
 ```bash
 php /var/apache2/templates/config-template.php > /etc/apache2/sites-available/001-reverse-proxy.conf
@@ -361,7 +361,7 @@ php /var/apache2/templates/config-template.php > /etc/apache2/sites-available/00
 
 Then we created a bash script to build, configure and start our infrastructure.
 
-First in the script we define our image and container name
+In one hand the script which define the image and the container name.
 
 ```bash
 staticContainerImage=res/static_image
@@ -373,7 +373,7 @@ dynamicContainerName=dynamic_app
 rpContainerName=rp_app
 ```
 
-Then just a fiew line to stop old running container with the same name
+In the other hand just few line to stop old running container with the same name.
 
 ```bash
 docker stop $staticContainerName
@@ -385,7 +385,7 @@ docker rm $dynamicContainerName
 docker rm $rpContainerName
 ```
 
-Then we build the images 
+Then build docker images .
 
 ```bash
 cd ..
@@ -401,16 +401,16 @@ cd docker-apache-RP
 docker build . -t $rpContainerImage
 ```
 
-Next we run the static and dynamic service
+Next run the static and dynamic services
 
 ```bash
 docker run -d --name $staticContainerName $staticContainerImage
 docker run -d --name $dynamicContainerName $dynamicContainerImage
 ```
 
-And noe the magic part :
+And now the magic part :
 
-We inspecte by the name, the botth services to get their ip adresses
+Using `docker inspect` we get their IP addresses.
 
 ```bash
 ipstatic=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $staticContainerName)
@@ -418,18 +418,17 @@ ipdynamic=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}
 
 ```
 
-And at the wnd we start our reverse proxy container with the environment variables
+In the end we start our reverse proxy container with the environment variables found above.
 
 ```bash
 docker run -d -e $staticContainerName=$ipstatic:80 -e $dynamicContainerName=$ipdynamic:3000 -p 80:80 --name $rpContainerName $rpContainerImage
-
 ```
 
 
 
 ## Additional steps
 
-All configuration In theses steps are in the branch `traefik`. To simplify the configuration of the used tools, we created a docker-compose.yml file and set our infrastructure to use it.
+All configuration in theses steps are in the branch `traefik`. To simplify the configuration of the used tools, we created a `docker-compose.yml` file and set our infrastructure to use it.
 
 ```
 version: "3"
@@ -451,9 +450,9 @@ services:
 
 ```
 
-And for the next steps we use the traefik reverse proxy that support the load balancing, the sticky sessions and the dynamic cluster managment
+In the next following part we use the `traefik` reverse proxy that support the load balancing, the sticky sessions and the dynamic cluster management.
 
-We installed it by adding the default configuration in the docker-compose file
+We installed `traefik` by adding the default configuration in the *docker-compose* file.
 
 ```yml
   rp:
@@ -477,9 +476,7 @@ networks:
     external: true      
 ```
 
-And set the label to our configuation to support traefik.
-
-To the static service
+Set to the static service configuration corresponding label to support `traefik` .
 
 ```yml
     labels:
@@ -494,11 +491,11 @@ To the static service
 
 Here is the configuration to the sticky session and the load balancing.
 
-If we start our infrastructure and check in the network tab in dev tool fom the browser we see a cookie for the session.
+If we start the infrastructure and check in the network tab in `dev` tool from the browser we see a cookie for the session.
 
 ![stickysession](img/stickysession.png)
 
-to the dynamic service
+Set to the dynamic service configuration corresponding label to support `traefik` .
 
 ```yml
     labels:
@@ -507,13 +504,13 @@ to the dynamic service
      - "traefik.port=3000"
 ```
 
-So if we run the the command to upscale the dynamic service :
+Run the the command to upscale the dynamic service .
 
 ```bash
 docker-compose scale dynamic-express=3
 ```
 
-![](/home/dpage/Bureau/img/scale.png)
+![](img/scale.png )
 
 We can see that we have 3 instances of the node server.
 
@@ -523,9 +520,9 @@ We can also up scale our static web site
 
 ### Management UI  
 
-For the management UI we instelled and used the tool `portainer` 
+For the management UI we installed and used the tool `portainer` .
 
-The installation is set by adding a new service in the docker compose file
+The installation is set by adding a new service in the docker compose file.
 
 ```yml
   portainer:
@@ -542,9 +539,7 @@ volumes:
     portainer_data:
 ```
 
-So now we can manage our lab througth the web interface on `localhost:9000`
-
-
+So now we can manage our lab through the web interface on `localhost:9000`
 
 ## ![portainer](./img/portainer.png)
 
