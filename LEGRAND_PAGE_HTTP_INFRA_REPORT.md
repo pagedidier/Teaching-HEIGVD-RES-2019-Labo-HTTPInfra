@@ -219,7 +219,7 @@ Our laboratory group have Linux as operation system and we check the two contain
 <u>001-reverse-proxy.conf</u>
 
 ```
-<VirtualHost *:80>
+</VirtualHost *:80>
     ServerName demo.res.ch
 
     ProxyPass "/api/" "http://172.0.24.1:3000/"
@@ -227,7 +227,7 @@ Our laboratory group have Linux as operation system and we check the two contain
 
     ProxyPass "/" "http://172.0.24.2:80/"
     ProxyPassReverse "/" "http://172.0.24.2:80/"
-<VirtualHost>
+</VirtualHost>
 ```
 
 After we get the desired configuration we write the Dockerfile.
@@ -272,17 +272,11 @@ Host: demo.res.ch
 
 To get this working from browser you have to add `localhost demo.res.ch` to your hosts.
 
-
-
-// ---------------------------- capture du reverse proxy qui fonctionne ----------------------------
-
 ## Step 4: AJAX requests with JQuery
 
 The content of this step is in branch `feature/express-docker`.
 
 In this part we modify static content to execute AJAX request on Express server to update the static content.
-
-
 
 Firstly we modify all our *Dockerfile* to make vim installed on all our custom docker image.  Just add the following line into each *Dockerfile*.
 
@@ -295,10 +289,29 @@ Do not forget to rebuild all images before run containers.
 Then we modify the static content (in our case it is `index.html`) to add some JavaScript.
 
 ```javascript
-Mettre une fonction javascript
+ $.getJSON("http://localhost/api/meteo/").done((data) => {...}
 ```
 
-This function is used to update ----------- Un champ de la page html + quelques explications ------------.
+This function is used to ge data from our  dynamic service.
+
+Then in the corp of the function we get the html tempate form the div and update his content.
+
+```javascript
+ var temp = $.trim($('#meteo-template').html());
+```
+
+```javascript
+$.getJSON("http://localhost/api/meteo/").done((data) => {
+      $("#meteo").empty();
+      $.each( data, function( i, item ) {
+        var x = temp.replace("{{ city.cityname }}", item.city.cityname);
+        x = x.replace("{{ city.citylat }}", item.city.citylat);
+        x = x.replace("{{ city.citylong }}", item.city.citylong);
+        x = x.replace("{{ meteo.temperature }}", item.meteo.temperature);
+        x =x.replace("{{ meteo.precipitation }}", item.meteo.precipitation);        			$("#meteo").append(x);
+	  });
+};
+```
 
 
 
@@ -398,7 +411,7 @@ ipdynamic=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}
 
 ```
 
-And at the wnd we start our reverse proxy contaienr with the environment variables
+And at the wnd we start our reverse proxy container with the environment variables
 
 ```bash
 docker run -d -e $staticContainerName=$ipstatic:80 -e $dynamicContainerName=$ipdynamic:3000 -p 80:80 --name $rpContainerName $rpContainerImage
