@@ -37,9 +37,9 @@ $ docker run --rm --name apache_php -d -p 80:80 res/apache_php:latest
 
 Then access the server on <u>port 80</u>.
 
-![](img/postman_static.png)
+![](/home/baribal/ownCloud/HEIG/Semestre_IV/RES/Laboratoire/http-infra-Bruno/Teaching-HEIGVD-RES-2019-Labo-HTTPInfra/img/postman_static.png)
 
-![result of static content](img/static_content.png)
+![result of static content](/home/baribal/ownCloud/HEIG/Semestre_IV/RES/Laboratoire/http-infra-Bruno/Teaching-HEIGVD-RES-2019-Labo-HTTPInfra/img/static_content.png)
 
 ## Step 2: Dynamic HTTP server with express.js
 
@@ -169,7 +169,7 @@ Note that you had to specified the resource which is `api/meteo` otherwise you w
 
 Getting the right resource the server is sending to us *JSON* array containing fake weather data.
 
-  ![](img/postman_dynamic.png)
+  ![](/home/baribal/ownCloud/HEIG/Semestre_IV/RES/Laboratoire/http-infra-Bruno/Teaching-HEIGVD-RES-2019-Labo-HTTPInfra/img/postman_dynamic.png)
 
 ## Step 3: Reverse proxy with apache (static configuration)
 
@@ -276,6 +276,38 @@ To get this working from browser you have to add `localhost demo.res.ch` to your
 // ---------------------------- capture du reverse proxy qui fonctionne ----------------------------
 
 ## Step 4: AJAX requests with JQuery
+
+The content of this step is in branch `feature/express-docker`.
+
+In this part we modify static content to execute AJAX request on Express server to update the static content.
+
+
+
+Firstly we modify all our *Dockerfile* to make vim installed on all our custom docker image.  Just add the following line into each *Dockerfile*.
+
+```dockerfile
+RUN apt update && apt install -y vim
+```
+
+Do not forget to rebuild all images before run containers.
+
+Then we modify the static content (in our case it is `index.html`) to add some JavaScript.
+
+```javascript
+Mettre une fonction javascript
+```
+
+This function is used to update ----------- Un champ de la page html + quelques explications ------------.
+
+
+
+## Step 5: Dynamic reverse proxy configuration
+
+The content of this step is in branch `feature/RP-dynamic`.
+
+In this part we modify the reverse proxy configuration to :
+
+- 
 
 ## Sources
 
