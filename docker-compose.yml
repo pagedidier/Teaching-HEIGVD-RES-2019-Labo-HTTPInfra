@@ -12,7 +12,7 @@ services:
       - "traefik.frontend.rule=Host:localhost"
       - "traefik.port=80"
       - "traefik.backend.loadbalancer.stickiness=true"
-      - "traefik.backend.loadbalancer.stickiness.cookieName=stickyCookie" 
+      - "traefik.backend.loadbalancer.stickiness.cookieName=stickyCookie"
     networks:
       - web
   dynamic-express:
@@ -30,7 +30,6 @@ services:
       - web
   rp:
     image: traefik
-    container_name: traefikrp
     restart: always
     command: --api --docker # Enables the web UI and tells Traefik to listen to docker
     ports:

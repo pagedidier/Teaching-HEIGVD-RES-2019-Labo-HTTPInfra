@@ -4,7 +4,7 @@ $(function () {
   var temp2 = $.trim($('#meteo-day').html());
   function getMeteo() {
 
-    $.getJSON("http://localhost:3000/api/meteo/").done((data) => {
+    $.getJSON("http://localhost/api/meteo/").done((data) => {
       $("#meteo").empty();
       $.each( data, function( i, item ) {
 

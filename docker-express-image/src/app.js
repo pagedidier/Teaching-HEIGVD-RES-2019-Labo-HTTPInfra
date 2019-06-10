@@ -37,7 +37,7 @@ app.use((req, res, next) => {
 app.use(cors());
 
 
-app.get('/api/meteo', (req, res) => {
+app.get('/meteo', (req, res) => {
   const data = [];
   for (let i = 0; i < 10; i += 1) {
     const cityname = chance.city();
